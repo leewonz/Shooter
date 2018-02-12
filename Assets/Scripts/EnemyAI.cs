@@ -12,7 +12,7 @@ public class EnemyAI : MonoBehaviour {
     float playerBulletNear = 2;
     float sightLength = 50;
     LayerMask maskSolidOnly = 1 << 9;
-    float destinationSize = 0.2f;
+    float destinationSize = 0.3f;
 
     Transform floorPoint;
 
@@ -201,6 +201,7 @@ public class EnemyAI : MonoBehaviour {
             {
                 Task.current.Succeed(); return;
             }
+            else { Task.current.Fail(); }
         }
         else { Task.current.Fail(); }
     }
@@ -208,9 +209,11 @@ public class EnemyAI : MonoBehaviour {
 
 
     [Task]
-    void RotateToDestination(float amount = 10.0f)
+    void RotateToDestination(float amount = 360.0f)
     {
         Vector3 currentPos = gameObject.transform.position;
+
+        float amountTimeBased = amount * Time.deltaTime;
 
         float currentRotation = aimAngleH;
         float destinationRotation = Quaternion.LookRotation(
@@ -222,8 +225,8 @@ public class EnemyAI : MonoBehaviour {
 
         Task.current.debugInfo = "Angle: " + rotationDiff.ToString();
         
-        if (rotationDiff < amount || 
-            (rotationDiff < 360.0f && rotationDiff > 360.0f - amount))
+        if (rotationDiff < amountTimeBased || 
+            (rotationDiff < 360.0f && rotationDiff > 360.0f - amountTimeBased))
         {
             aimAngleH = destinationRotation;
             Task.current.Succeed();
@@ -232,11 +235,11 @@ public class EnemyAI : MonoBehaviour {
         {
             if (ClampAngle(destinationRotation - currentRotation) <= 180)
             {
-                aimAngleH += amount;
+                aimAngleH += amountTimeBased;
             }
             else
             {
-                aimAngleH -= amount;
+                aimAngleH -= amountTimeBased;
             }
         }
 
@@ -246,6 +249,41 @@ public class EnemyAI : MonoBehaviour {
     void SetRandomAttackPosition(float minRange = 5.0f, float maxRange = 10.0f, int checkCount = 10)
     {
 
+    }
+
+    [Task]
+    void RotateToPlayer(float amount = 360.0f)
+    {
+        Vector3 newDir;
+
+        Quaternion newLookRot;
+
+        float amountTimeBased = amount * Time.deltaTime;
+
+        Vector3 currentPos = gameObject.transform.position;
+        Vector3 playerPos = GameObject.FindGameObjectWithTag("Player").transform.position;
+
+        Quaternion currentLookRot = Quaternion.Euler(aimAngleV, aimAngleH, 0);
+        Quaternion playerLookRot = Quaternion.LookRotation(playerPos - currentPos, Vector3.up);
+
+        float angle = Vector3.Angle(currentLookRot * Vector3.forward, playerLookRot * Vector3.forward);
+
+        Task.current.debugInfo = "Angle: " + angle.ToString();
+
+        if (angle <= amountTimeBased)
+        {
+            newLookRot = playerLookRot;
+        }
+        else
+        {
+            newLookRot = Quaternion.Lerp(currentLookRot, playerLookRot, amountTimeBased / angle);
+        }
+        newDir = Quaternion.LookRotation(newLookRot * Vector3.forward, Vector3.up).eulerAngles;
+
+        aimAngleH = newDir.y;
+        aimAngleV = newDir.x;
+
+        Task.current.Succeed();
     }
     /*
     [Task]

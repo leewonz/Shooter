@@ -9,7 +9,7 @@ tree("Idle")
 				while not IsInDestination
 					parallel
 						repeat MoveToPosition
-						repeat RotateToDestination(10.0)
+						repeat RotateToDestination(360.0)
 						not Wait 2.0
 			random
 				Wait 1.0
@@ -18,9 +18,10 @@ tree("Idle")
 tree("Attack")
 	mute 
 		sequence
-			parallel
-				repeat MoveToPosition
-				not WaitRandom(0.1,0.2)
+			mute
+				parallel
+					repeat MoveToPosition
+					not WaitRandom(0.1,0.2)
 			parallel
 				sequence
 					repeat SetRandomAttackPosition(2.0,4.0,10)
@@ -30,4 +31,5 @@ tree("Attack")
 								repeat MoveToPosition
 								not Wait 2.0
 					Succeed
+				repeat RotateToPlayer(180.0)
 				Succeed
