@@ -1,0 +1,11 @@
+tree("Root")
+	sequence
+		mute
+			while
+				sequence
+					not IsPlayerSeen
+					not IsPlayerBulletNear
+				tree("Idle")
+		parallel
+			tree("Attack")
+			Running

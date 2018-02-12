@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 0caa157f296f4224fb9cca5404acdf74
+timeCreated: 1518357169
+licenseType: Free
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - crosshairStickH: {fileID: 2800000, guid: 9df7e8b132a55d14b8b396ee3977b6b3, type: 3}
+  - crosshairStickV: {fileID: 2800000, guid: 7d894b8154693e0408126329fe82eae4, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -1,0 +1,33 @@
+tree("Idle")
+	repeat
+		sequence
+			mute 
+				fallback
+					SetRandomPath(2.0,6.0,10)
+					SetRandomPath(1.0,2.0,10)
+			mute
+				while not IsInDestination
+					parallel
+						repeat MoveToPosition
+						repeat RotateToDestination(10.0)
+						not Wait 2.0
+			random
+				Wait 1.0
+				Succeed
+
+tree("Attack")
+	mute 
+		sequence
+			parallel
+				repeat MoveToPosition
+				not WaitRandom(0.1,0.2)
+			parallel
+				sequence
+					repeat SetRandomAttackPosition(2.0,4.0,10)
+					mute
+						while not IsInDestination
+							parallel
+								repeat MoveToPosition
+								not Wait 2.0
+					Succeed
+				Succeed
