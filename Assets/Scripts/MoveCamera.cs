@@ -6,12 +6,12 @@ using UnityEngine;
 public class MoveCamera : MonoBehaviour {
     public int sensitivity;
 
-    [HideInInspector]
-    public float cameraHorizontalAngle;
-    [HideInInspector]
-    public float cameraVerticalAngle;
+    
+    public float cameraHorizontalAngle = 0;
+    
+    public float cameraVerticalAngle = 0;
 
-    int sensitivityMul = 10;
+    float sensitivityMul = 0.2f;
     GameObject parent;
     GameObject camera;
 
@@ -31,19 +31,27 @@ public class MoveCamera : MonoBehaviour {
         parent = gameObject.transform.parent.gameObject;
         camera = GameObject.FindGameObjectWithTag("MainCamera");
         cameraLocalPos = camera.transform.localPosition;
+
+        //cameraHorizontalAngle = parent.transform.rotation.y;
+        //cameraVerticalAngle = 0;
     }
 	
 	// Update is called once per frame
 	void Update () {
         cameraHorizontalAngle += 
-            Time.deltaTime * Input.GetAxisRaw("Mouse X") * sensitivity * sensitivityMul;
+            Input.GetAxisRaw("Mouse X") * sensitivity * sensitivityMul;
 
         cameraVerticalAngle -=
-            Time.deltaTime * Input.GetAxisRaw("Mouse Y") * sensitivity * sensitivityMul;
+            Input.GetAxisRaw("Mouse Y") * sensitivity * sensitivityMul;
         cameraVerticalAngle = Mathf.Clamp(cameraVerticalAngle, -90.0f, 90.0f);
 
-        parent.transform.rotation = 
-            Quaternion.Euler(new Vector3(0, cameraHorizontalAngle, 0));
+
+    }
+
+    void LateUpdate()
+    {
+        parent.transform.rotation =
+    Quaternion.Euler(new Vector3(0, cameraHorizontalAngle, 0));
         camera.transform.localRotation =
             Quaternion.Euler(new Vector3(cameraVerticalAngle, 0, 0));
 

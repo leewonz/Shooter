@@ -23,13 +23,18 @@ tree("Attack")
 					repeat MoveToPosition
 					not WaitRandom(0.1,0.2)
 			parallel
-				sequence
-					repeat SetRandomAttackPosition(2.0,4.0,10)
-					mute
-						while not IsInDestination
-							parallel
-								repeat MoveToPosition
-								not Wait 2.0
-					Succeed
+				repeat
+					sequence
+						repeat 2
+							sequence
+								not repeat not SetRandomAttackPath(1.5,6.0,2.0,10)
+						
+								mute
+									while not IsInDestination
+										parallel
+											repeat MoveToPosition
+											not Wait 2.0
+						sequence
+							Wait 0.4
+							FireAll()
 				repeat RotateToPlayer(180.0)
-				Succeed

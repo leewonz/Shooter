@@ -19,6 +19,7 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4172849292245214}
+  - component: {fileID: 114008230830417802}
   m_Layer: 2
   m_Name: Enemy Gun
   m_TagString: Untagged
@@ -37,7 +38,7 @@ GameObject:
   - component: {fileID: 33761397432646086}
   - component: {fileID: 23673461281450218}
   m_Layer: 2
-  m_Name: GunModel
+  m_Name: Model
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -82,6 +83,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4254773583576930}
   - component: {fileID: 114461112013182956}
+  - component: {fileID: 114104614752012218}
   - component: {fileID: 114090031210373592}
   - component: {fileID: 143724702399502914}
   m_Layer: 0
@@ -101,8 +103,9 @@ GameObject:
   - component: {fileID: 4229577090321232}
   - component: {fileID: 33215993001660808}
   - component: {fileID: 23768380675648940}
-  m_Layer: 0
-  m_Name: enemy_10x
+  - component: {fileID: 64697588961108920}
+  m_Layer: 10
+  m_Name: Model
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -232,7 +235,7 @@ MeshRenderer:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1654035979094036}
   m_Enabled: 1
-  m_CastShadows: 2
+  m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
   m_MotionVectors: 1
@@ -273,6 +276,41 @@ MeshFilter:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1139263549323470}
   m_Mesh: {fileID: 4300000, guid: 8b69567f464fd2743a970b4d3c31a089, type: 3}
+--- !u!64 &64697588961108920
+MeshCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1654035979094036}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Convex: 0
+  m_CookingOptions: 14
+  m_SkinWidth: 0.01
+  m_Mesh: {fileID: 4300000, guid: ee26864cf32273041a63be2245369f93, type: 3}
+--- !u!114 &114008230830417802
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1098083592999984}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 28e6291a73182f842ba0d5c7c71e8ef8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bulletObj: {fileID: 1443534923935772, guid: 5dae7cbba4646da4991bb0ad3e816a6a, type: 2}
+  bulletCountMax: 3
+  reloadTimeMax: 2
+  fireInterval: 0.3
+  spread: 2
+  bulletSpeed: 22
+  bulletLife: 2
+  bulletCountCurrent: 0
+  fireIntervalCurrent: 0
+  reloadTimeCurrent: 0
 --- !u!114 &114090031210373592
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -300,6 +338,18 @@ MonoBehaviour:
     breakPointStatuses: 
     collapsedLines: 
     btScript: 
+--- !u!114 &114104614752012218
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1295212324597346}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 64cefda99f5d6c145b5931c1c6fa6bbc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hitMaterial: {fileID: 2100000, guid: 7a097a2f32332ce468383c15c7ff1c14, type: 2}
 --- !u!114 &114461112013182956
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -322,7 +372,7 @@ CharacterController:
   m_Enabled: 1
   serializedVersion: 2
   m_Height: 1.2
-  m_Radius: 0.4
+  m_Radius: 0.3
   m_SlopeLimit: 60
   m_StepOffset: 0.3
   m_SkinWidth: 0.08

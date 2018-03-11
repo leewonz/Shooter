@@ -9,17 +9,20 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3d569f1492ed15045a1920923e1f2335, type: 3}
-  m_Name: HandGun
+  m_Name: Handgun
   m_EditorClassIdentifier: 
   gunType: 0
   holdClickToFire: 1
   gunObj: {fileID: 1977948813503114, guid: d603f47a9d018c946af457b41953c839, type: 2}
-  bulletObj: {fileID: 1443534923935772, guid: 5dae7cbba4646da4991bb0ad3e816a6a, type: 2}
+  bulletObj: {fileID: 1912181210798784, guid: 9818add4a7812f5458e67498925298a6, type: 2}
   clipSize: 12
   maxBullet: 240
   fireInterval: 0.2
   reloadTime: 1
-  spread: 0.5
+  spread: 0.2
+  bulletCount: 1
   recoil: 1
   recoilMax: 4
-  bulletSpeed: 0.5
+  recoilDecrease: 10
+  bulletSpeed: 150
+  bulletLife: 0.8

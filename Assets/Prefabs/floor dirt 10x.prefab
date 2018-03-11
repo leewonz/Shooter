@@ -37,6 +37,7 @@ GameObject:
   - component: {fileID: 33328272461966418}
   - component: {fileID: 23147902900063580}
   - component: {fileID: 65640399211463292}
+  - component: {fileID: 64132156584774682}
   m_Layer: 9
   m_Name: floor_dirt_10x
   m_TagString: Untagged
@@ -64,8 +65,8 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1581253029049604}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -1, z: 0.5000003}
-  m_LocalScale: {x: 20, y: 1, z: 8}
+  m_LocalPosition: {x: 5, y: -1, z: 0}
+  m_LocalScale: {x: 10, y: 1, z: 10}
   m_Children:
   - {fileID: 4870021916266708}
   m_Father: {fileID: 0}
@@ -111,6 +112,20 @@ MeshFilter:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1636319352006752}
+  m_Mesh: {fileID: 4300000, guid: 059c1c57809acc14eb39fbb9db3e02ad, type: 3}
+--- !u!64 &64132156584774682
+MeshCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1636319352006752}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 0
+  serializedVersion: 3
+  m_Convex: 0
+  m_CookingOptions: 14
+  m_SkinWidth: 0.01
   m_Mesh: {fileID: 4300000, guid: 059c1c57809acc14eb39fbb9db3e02ad, type: 3}
 --- !u!65 &65640399211463292
 BoxCollider:

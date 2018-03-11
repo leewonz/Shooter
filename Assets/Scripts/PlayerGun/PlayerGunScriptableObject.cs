@@ -22,8 +22,12 @@ public class PlayerGunScriptableObject : ScriptableObject {
     public float reloadTime;
 
     public float spread;
+    public int bulletCount;
     public float recoil;
     public float recoilMax;
+    public float recoilDecrease;
 
     public float bulletSpeed;
+
+    public float bulletLife;
 }

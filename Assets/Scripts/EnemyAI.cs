@@ -12,9 +12,12 @@ public class EnemyAI : MonoBehaviour {
     float playerBulletNear = 2;
     float sightLength = 50;
     LayerMask maskSolidOnly = 1 << 9;
-    float destinationSize = 0.3f;
+    float destinationSize = 0.5f;
 
     Transform floorPoint;
+
+    GameObject playerObject;
+    Vector3 playerPosition = new Vector3();
 
     Vector3 moveDestination;
     List<Vector3> moveDestinations = new List<Vector3>();
@@ -33,10 +36,13 @@ public class EnemyAI : MonoBehaviour {
 
     Vector3 linevis;
 
+    GameObject gunInstance;
+    EnemyGun gunScript;
+
     void Start() {
         controller = gameObject.GetComponent<CharacterController>();
         movement = new MovementHelper.Movement(gameObject, controller
-            , _moveAcc: 0.015, _moveMax: 0.08, _friction: 0.010, _gravity: 0.45f);
+            , _moveAcc: 54f, _moveMax: 4.8, _friction: 32f, _gravity: 27f);
 
         moveDestination = gameObject.transform.position;
 
@@ -52,9 +58,16 @@ public class EnemyAI : MonoBehaviour {
         boxvis5 = 0;
 
         linevis = new Vector3(0, 0, 0);
+
+        playerObject = GameObject.FindGameObjectWithTag("Player");
+
+        gunInstance = gameObject.transform.Find("Enemy Gun").gameObject;
+        gunScript = gunInstance.GetComponent<EnemyGun>();
     }
 
     void Update() {
+        playerPosition = playerObject.transform.position;
+
         movement.Update();
 
         gameObject.transform.rotation = Quaternion.Euler(0, aimAngleH, 0);
@@ -71,7 +84,7 @@ public class EnemyAI : MonoBehaviour {
         for (int i = 1; i < moveDestinations.Count; i++)
         {
             Gizmos.color = Color.green;
-            Gizmos.DrawLine(moveDestinations[i-1], moveDestinations[i]);
+            Gizmos.DrawLine(moveDestinations[i - 1], moveDestinations[i]);
             Gizmos.DrawCube(moveDestinations[i], new Vector3(0.1f, 0.1f, 0.1f));
         }
         Gizmos.color = Color.blue;
@@ -111,9 +124,11 @@ public class EnemyAI : MonoBehaviour {
             if ((bullet.transform.position - gameObject.transform.position).magnitude <= playerBulletNear)
             {
                 Task.current.Succeed();
+                return;
             }
-            else { Task.current.Fail(); }
+            else { Task.current.Fail(); return; }
         }
+        Task.current.Fail();
     }
 
     [Task]
@@ -136,6 +151,35 @@ public class EnemyAI : MonoBehaviour {
     }
 
     [Task]
+    void SetRandomFleePosition(float maxAngle = 90f
+        , float minRange = 5.0f, float maxRange = 10.0f, int checkCount = 10)
+    {
+        Vector3 targetPosition = playerObject.transform.position;
+        Vector3? dest;
+
+        for (int i = 0; i <= checkCount; i++)
+        {
+            dest = ReturnRandomPosition(minRange, maxRange);
+            if (dest != null)
+            {
+                Vector3 currentDirection = transform.position - targetPosition;
+                Vector3 newDirection = dest.Value - targetPosition;
+
+                if ((Quaternion.Angle(Quaternion.Euler(currentDirection), Quaternion.Euler(newDirection))
+                    <= maxAngle )
+                    && currentDirection.sqrMagnitude + (minRange* minRange) <= newDirection.sqrMagnitude)
+                {
+                    moveDestination = dest.Value;
+                    Task.current.debugInfo = "Dest: " + moveDestination.ToString();
+                    Task.current.Succeed(); return;
+                }
+            }
+        }
+        Task.current.debugInfo = "Dest: null";
+        Task.current.Fail();
+    }
+
+    [Task]
     void SetRandomPath(float minRange = 5.0f, float maxRange = 10.0f, int checkCount = 10)
     {
         NavMeshPath destPath;
@@ -145,10 +189,9 @@ public class EnemyAI : MonoBehaviour {
             destPath = ReturnRandomPath(minRange, maxRange);
             if (destPath != null)
             {
+                // add path
                 moveDestination = destPath.corners[1];
-
-                //Debug.DrawLine(destPath.corners[0], destPath.corners[0] + new Vector3(0, 1, 0),Color.red);
-
+                
                 moveDestinations.Clear();
                 for (int j = 1; j < destPath.corners.Length; j++)
                 {
@@ -156,6 +199,109 @@ public class EnemyAI : MonoBehaviour {
                 }
                 Task.current.debugInfo = "Dest count: " + destPath.corners.Length.ToString();
                 Task.current.Succeed(); return;
+            }
+        }
+        Task.current.debugInfo = "Path not found";
+        Task.current.Fail();
+    }
+
+    [Task]
+    void SetRandomFleePath(float maxAngle = 90f
+        , float minRange = 5.0f, float maxRange = 10.0f, int checkCount = 10)
+    {
+        //SetRandomFleePath(90.0,2.0,6.0,10)
+        NavMeshPath destPath;
+
+        Vector3 targetPosition = playerObject.transform.position;
+
+        for (int i = 0; i <= checkCount; i++)
+        {
+            destPath = ReturnRandomPath(minRange, maxRange);
+            if (destPath != null)
+            {
+                //flee condition
+                for (int k = 1; k < destPath.corners.Length; k++)
+                {
+                    Vector3 cornerPostiion = destPath.corners[k];
+
+                    Vector3 currentDirection = transform.position - targetPosition;
+                    Vector3 newDirection = cornerPostiion - targetPosition;
+
+                    Task.current.debugInfo = currentDirection.sqrMagnitude.ToString() + " / "
+                        + newDirection . sqrMagnitude.ToString();
+                    // for each corner:
+                    // is corner within target angle?
+                    // and equal or farther than initial distance?
+                    if ((Quaternion.Angle(Quaternion.Euler(currentDirection), Quaternion.Euler(newDirection))
+                        <= maxAngle)
+                        && currentDirection.sqrMagnitude <= newDirection.sqrMagnitude)
+                    {
+                        //for last corner: is corner farther than initial distance + minRange?
+                        if ((k == destPath.corners.Length - 1)
+                            && (currentDirection.sqrMagnitude + (minRange * minRange)
+                            <= newDirection.sqrMagnitude))
+                        {
+                            //condition met for this corner iteration
+                        }
+                        else
+                        {
+                            Task.current.debugInfo = "Path not found";
+                            Task.current.Fail(); return;
+                        }
+                    }
+                    else
+                    {
+                        Task.current.debugInfo = "Path not found";
+                        Task.current.Fail(); return;
+                    }
+                }
+
+                {
+                    // add path
+                    moveDestination = destPath.corners[1];
+
+                    moveDestinations.Clear();
+                    for (int j = 1; j < destPath.corners.Length; j++)
+                    {
+                        moveDestinations.Add(destPath.corners[j]);
+                    }
+                    //Task.current.debugInfo = "Dest count: " + destPath.corners.Length.ToString();
+                    Task.current.Succeed(); return;
+                }
+            }
+        }
+        Task.current.debugInfo = "Path not found";
+        Task.current.Fail();
+    }
+
+    [Task]
+    void SetRandomAttackPath(float minRange = 5.0f, float maxRange = 10.0f
+        , float minPlayerDistance = 2.0f, int checkCount = 20)
+    {
+        NavMeshPath destPath;
+
+        for (int i = 0; i <= checkCount; i++)
+        {
+            destPath = ReturnRandomPath(minRange, maxRange);
+            if (destPath != null)//condition: path exists?
+            {
+                Vector3 destPos = destPath.corners[destPath.corners.Length - 1];
+
+                if (!Physics.Linecast(playerPosition, destPos, maskSolidOnly)
+                    && (destPos - playerPosition).sqrMagnitude
+                    > (minPlayerDistance * minPlayerDistance))
+                {
+                    // add path
+                    moveDestination = destPath.corners[1];
+
+                    moveDestinations.Clear();
+                    for (int j = 1; j < destPath.corners.Length; j++)
+                    {
+                        moveDestinations.Add(destPath.corners[j]);
+                    }
+                    Task.current.debugInfo = "Dest count: " + destPath.corners.Length.ToString();
+                    Task.current.Succeed(); return;
+                }
             }
         }
         Task.current.debugInfo = "Path not found";
@@ -171,7 +317,7 @@ public class EnemyAI : MonoBehaviour {
 
         if ((floorPoint.position - moveDestination).magnitude <= destinationSize / 2)
         {
-            
+
             if (moveDestinations.Count > 1)
             {
                 moveDestinations.RemoveAt(0);
@@ -224,8 +370,8 @@ public class EnemyAI : MonoBehaviour {
             - ClampAngle(currentRotation));
 
         Task.current.debugInfo = "Angle: " + rotationDiff.ToString();
-        
-        if (rotationDiff < amountTimeBased || 
+
+        if (rotationDiff < amountTimeBased ||
             (rotationDiff < 360.0f && rotationDiff > 360.0f - amountTimeBased))
         {
             aimAngleH = destinationRotation;
@@ -285,26 +431,44 @@ public class EnemyAI : MonoBehaviour {
 
         Task.current.Succeed();
     }
-    /*
+
     [Task]
-    void WaitRandom(float minSec, float maxSec)
+    void FireAll()
     {
-        float timeMax = 99.0f;
-        float time = 99.0f;
-        if (Task.current.isStarting)
-        {
-            timeMax = Random.Range(minSec, maxSec);
-            time = timeMax;
-        }
-        time -= Time.deltaTime;
-        Task.current.debugInfo = string.Format("t = {0} / {1}", time, timeMax);
-        if (time <= 0)
+
+        gunScript.Fire(aimAngleH, aimAngleV);
+        /*
+        public float bulletCountCurrent;
+        public float fireIntervalCurrent;
+        public float reloadTimeCurrent;*/
+
+        Task.current.debugInfo = string.Format("Bullets: {0} / {1} Reload: {2} / {3}",
+            gunScript.bulletCountCurrent, gunScript.bulletCountMax
+            , gunScript.reloadTimeCurrent, gunScript.reloadTimeMax);
+
+        if (gunScript.bulletCountCurrent == 0)
         {
             Task.current.Succeed();
-            Task.current.debugInfo = "t = 0 / " + timeMax.ToString();
-            return;
         }
-    }*/
+    }
+    
+
+    [Task]
+    void CheckDistanceFromPlayer(float distance)
+    {
+
+        if ((transform.position - playerObject.transform.position).sqrMagnitude < distance * distance)
+        {
+            Task.current.Succeed();
+        }
+        else
+        {
+            Task.current.Fail();
+        }
+    }
+
+
+
     float ClampAngle(float angle)
     {
         if(angle > 360)
@@ -330,7 +494,7 @@ public class EnemyAI : MonoBehaviour {
         Vector3 forwardGapVector = thisTransform.rotation * Vector3.forward * forwardGap;
 
         if (Physics.BoxCast(
-            thisTransform.position + forwardGapVector
+            floorPoint.position + (Vector3.up * 0.1f) + forwardGapVector
             , new Vector3(1,0.1f,1) * 0.4f, directionVector
             , Quaternion.Euler(0, direction, 0), distance - forwardGap, maskSolidOnly))
         {
@@ -349,7 +513,7 @@ public class EnemyAI : MonoBehaviour {
                 thisTransform.position + forwardGapVector
             , new Vector3(1, 0.1f, 1) * 0.4f, thisTransform.rotation
             , directionVector, distance - forwardGap, Color.red);*/
-                boxvis1 = thisTransform.position + forwardGapVector;
+                boxvis1 = floorPoint.position + (Vector3.up * 0.1f) + forwardGapVector;
                 boxvis2 = new Vector3(1, 0.1f, 1) * 0.4f;
                 boxvis3 = Quaternion.Euler(0, direction, 0);
                 boxvis4 = directionVector;
@@ -362,7 +526,7 @@ public class EnemyAI : MonoBehaviour {
                 
 
                 dest =
-                    thisTransform.position + directionVector * distance;
+                    floorPoint.position + (Vector3.up * 0.1f) + directionVector * distance;
             }
         }
         return dest;
@@ -406,4 +570,25 @@ public class EnemyAI : MonoBehaviour {
             }
         }
     }
+
+    /*
+    [Task]
+    void WaitRandom(float minSec, float maxSec)
+    {
+        float timeMax = 99.0f;
+        float time = 99.0f;
+        if (Task.current.isStarting)
+        {
+            timeMax = Random.Range(minSec, maxSec);
+            time = timeMax;
+        }
+        time -= Time.deltaTime;
+        Task.current.debugInfo = string.Format("t = {0} / {1}", time, timeMax);
+        if (time <= 0)
+        {
+            Task.current.Succeed();
+            Task.current.debugInfo = "t = 0 / " + timeMax.ToString();
+            return;
+        }
+    }*/
 }

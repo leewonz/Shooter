@@ -2,44 +2,82 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+using MovementHelper;
+
 public class MovePlayer : MonoBehaviour {
 
     CharacterController controller;
-    MovementHelper.Movement movement;
+    Movement movement;
+    MovementProfile movementProfileNormal;
+    MovementProfile movementProfileAirdash;
 
-    MoveCamera camera;
+    MoveCamera cameraScript;
 
+    Transform thisTransform;
     GameObject currentGun;
     PlayerGun currentGunScript;
 
-    float moveAcc = 0.03f;
-    float moveMax = 0.09f;
-    float moveFriction = 0.015f;
-    float moveGravity = 0.45f;
+    float moveAcc = 108f;
+    float moveMax = 5.4f;
+    float moveFriction = 54f;
+    float moveGravity = 26f;
+
+    float moveAccAirdash = 48f;
+    float moveFrictionAirdash = 20f;
+
+    float jumpSpeed = 7.2f;
 
     bool dashOn = false;
     float dashDirection = 0;
-    float dashValueMax = 0.25f;
-    float dashValueAirMax = 0.25f;
+    float dashValueMax = 24f;
+    float dashValueAirMax = 11f;
     float dashValue = 0;
-    float dashMul = 0.96f;
-    float dashDec = 0.002f;
-    float dashSecondMul = 0.96f;
-    float dashSecondDec = 0.001f;
-    float dashTime = 0;
-    float dashTimeMax = 0.25f;
 
+    float dashMul = 1f;
+    float dashDec = 120f;
+    float dashSecondMul = 1f;
+    float dashSecondDec = 30f;
+
+    float dashTime = 0;
+    float dashTimeMax = 0.12f;
+
+    float dashSteerTimeMax = 0.04f;
+
+    bool wallJumpOn = false;
+    float wallJumpCheckRadius = 1.0f;
+    Vector3 wallJumpDirection;
+    float wallJumpSpeedHorizontal = 7f;
+    float wallJumpSpeedVertical = 6f;
+
+    float wallJumpTime = 0;
+    float wallJumpNoMoveTimeMax = 0.15f;
+
+    LayerMask maskSolid = 1 << 9;
+    LayerMask maskEnemy = 1 << 10;
 
     void Start () {
         controller = gameObject.GetComponent<CharacterController>();
-        movement = new MovementHelper.Movement(gameObject, controller
+        movement = new Movement(gameObject, controller
             , _moveAcc: moveAcc, _moveMax: moveMax
-            , _friction: moveFriction, _gravity: moveGravity);
+            , _friction: moveFriction, _gravity: moveGravity)
+        {
+            isRetainMotionEnabled = true
+        };
 
-        camera = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<MoveCamera>();
+        movementProfileNormal = new MovementProfile(_moveAcc: moveAcc, _moveMax: moveMax
+            , _friction: moveFriction, _gravity: moveGravity,_isMoveEnabled: true
+            , _isFrictionEnabled: true,_isGravityEnabled:true, _isRetainMotionEnabled: false);
+
+        movementProfileAirdash = new MovementProfile(_moveAcc: moveAccAirdash, _moveMax: moveMax
+            , _friction: moveFrictionAirdash, _gravity: moveGravity, _isRetainMotionEnabled: true);
+
+
+        cameraScript = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<MoveCamera>();
 
         currentGun = transform.Find("Handgun").gameObject;
         currentGunScript = currentGun.GetComponent<PlayerGun>();
+
+        thisTransform = gameObject.transform;
     }
 	
 	
@@ -55,23 +93,24 @@ public class MovePlayer : MonoBehaviour {
         //Input - jump
         if (Input.GetButtonDown("Jump") && movement.collisionBelow == true)
         {
-            movement.Jump(0.12f);
+            movement.Jump(jumpSpeed);
         }
 
         //set viewbob
         if ((Input.GetAxisRaw("Horizontal") == 0 && Input.GetAxisRaw("Vertical") == 0)
             || dashOn)
         {
-            camera.viewBobOn = false;
+            cameraScript.viewBobOn = false;
         }
         else
         {
-            camera.viewBobOn = true;
+            cameraScript.viewBobOn = true;
         }
 
         //Input - dash
         if (Input.GetButtonDown("Dash"))
         {
+            WallJumpEnd();
             DashStart();
         }
         if (Input.GetButtonUp("Dash"))
@@ -89,6 +128,31 @@ public class MovePlayer : MonoBehaviour {
         if (dashOn)
         {
             DashStep();
+        }
+
+        if (!dashOn && movement.collisionBelow)
+        {
+            movement.LoadProfile(movementProfileNormal);
+        }
+
+        //Input - wallJump
+        
+        if ( !movement.collisionBelow && Input.GetButtonDown("Jump") && !wallJumpOn && !dashOn)
+        {
+            if (WallJumpCheck())
+            {
+                WallJumpStart();
+            }
+        }
+
+        if (wallJumpOn)
+        {
+            WallJumpStep();
+        }
+
+        if (movement.collisionBelow && wallJumpOn)
+        {
+            WallJumpEnd();
         }
 
         //Input - fire
@@ -148,24 +212,37 @@ public class MovePlayer : MonoBehaviour {
 
         dashTime = 0.0f;
 
+        //Dash always can interrupt WallJump
+        //WallJump cannot interrupt Dash
         dashOn = true;
     }
 
     void DashStep()
     {
+        if (dashTime <= dashSteerTimeMax)
+        {
+            dashDirection = (transform.rotation.eulerAngles.y)
+                + AxisToDir(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+        }
+
         movement.SetMotion2d(Quaternion.Euler(0, dashDirection, 0) * new Vector3(0, 0, dashValue));
         if (movement.collisionBelow)
         {
             if (dashValue >= moveMax)
             {
                 dashValue *= dashMul;
-                dashValue = Mathf.Max(dashValue - dashDec, 0);
+                dashValue = Mathf.Max(dashValue - dashDec * (Time.deltaTime), 0);
             }
             else
             {
                 dashValue *= dashSecondMul;
-                dashValue = Mathf.Max(dashValue - dashSecondDec, 0);
+                dashValue = Mathf.Max(dashValue - dashSecondDec * (Time.deltaTime), 0);
             }
+        }
+        else
+        {
+            movement.LoadProfile(movementProfileAirdash);
+            dashValue = Mathf.Min(dashValue, dashValueAirMax);
         }
         dashTime += Time.deltaTime;
     }
@@ -176,5 +253,86 @@ public class MovePlayer : MonoBehaviour {
         movement.isFrictionEnabled = true;
         dashOn = false;
     }
+
+    bool WallJumpCheck()
+    {
+        /*
+        Collider[] doubleJumpWalls = Physics.OverlapSphere(
+            gameObject.transform.position, doubleJumpCheckRadius, maskSolid);
+        */
+        RaycastHit rayHitLeft = new RaycastHit();
+        RaycastHit rayHitRight = new RaycastHit();
+        RaycastHit rayHit = new RaycastHit();
+
+        int wallJumpSide = 0; // -1: left / 1: right //UNUSED
+
+        float cameraRotationH = cameraScript.cameraHorizontalAngle;
+
+        //check left
+        bool lineLeftExists = Physics.Linecast(thisTransform.position
+            , thisTransform.position
+            + Quaternion.Euler(0, cameraRotationH - 90, 0) * Vector3.forward * wallJumpCheckRadius
+            , out rayHitLeft, maskSolid);
+
+        //check right
+        bool lineRightExists = Physics.Linecast(thisTransform.position
+            , thisTransform.position
+            + Quaternion.Euler(0, cameraRotationH + 90, 0) * Vector3.forward * wallJumpCheckRadius
+            , out rayHitRight, maskSolid);
+
+        //check sides and transfer hit info to rayHit
+        if (lineLeftExists && !lineRightExists)
+        { rayHit = rayHitLeft; wallJumpSide = -1; }
+        if (!lineLeftExists && lineRightExists)
+        { rayHit = rayHitRight; wallJumpSide = 1; }
+        if (lineLeftExists && lineRightExists)
+        {
+            if (rayHitLeft.distance < rayHitRight.distance) // left
+            { rayHit = rayHitLeft; wallJumpSide = 1; }
+            else
+            { rayHit = rayHitRight; wallJumpSide = -1; }
+        }
+        if (!lineLeftExists && !lineRightExists)
+        { return false; }
+        
+        wallJumpDirection = rayHit.normal;
+
+        movement.LoadProfile(movementProfileAirdash);
+
+        return true;
+    }
+
+    void WallJumpStart()
+    {
+        wallJumpOn = true;
+        movement.AddMotion2d(wallJumpDirection * wallJumpSpeedHorizontal);
+        movement.Jump(wallJumpSpeedVertical);
+
+        movement.isMoveEnabled = false;
+
+        wallJumpTime = 0.0f;
+    }
+
+    void WallJumpStep()
+    {
+        wallJumpTime += Time.deltaTime;
+        if (wallJumpTime >= wallJumpNoMoveTimeMax)
+        {
+            movement.isMoveEnabled = true;
+        }
+    }
+
+    void WallJumpEnd()
+    {
+        if (!dashOn)
+        {
+            wallJumpOn = false;
+
+            movement.isMoveEnabled = true;
+
+            movement.LoadProfile(movementProfileNormal);
+        }
+    }
+    
 }
 
