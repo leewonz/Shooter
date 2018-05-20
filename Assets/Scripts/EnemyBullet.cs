@@ -64,7 +64,7 @@ public class EnemyBullet : MonoBehaviour {
         //raycast init
         RaycastHit hit = new RaycastHit();
         bool isRayHit = Physics.Raycast(thisPos, direction, out hit, speed * Time.deltaTime
-            , layerMaskEnemy | layerMaskSolid);
+            , layerMaskPlayer | layerMaskSolid);
 
         //is ray hit by something?
         if (isRayHit)
@@ -74,17 +74,19 @@ public class EnemyBullet : MonoBehaviour {
                 if ((clippingEnabled == false
                     || (thisPos - positionInit).sqrMagnitude >= clippingDistance * clippingDistance))
                 {
+                    //Debug.Log("a");
                     MakeHitEffect(hitEffect, hit.point - (direction * 0.2f)
                         , Quaternion.LookRotation(direction, Vector3.up));
                     Destroy(gameObject);
                 }
             }
-            if ((1 << hit.transform.gameObject.layer) == layerMaskPlayer)//enemy
+            if ((1 << hit.transform.gameObject.layer) == layerMaskPlayer)//player
             {
+                //Debug.Log("b");
                 MakeHitEffect(hitEffect, hit.point - (direction * 0.2f)
                     , Quaternion.LookRotation(direction, Vector3.up));
 
-                //hit.transform.parent.gameObject.GetComponent<EnemyHit>().Hit(10);
+                hit.transform.parent.gameObject.GetComponent<PlayerHit>().Hit(1);
 
                 Destroy(gameObject);
             }

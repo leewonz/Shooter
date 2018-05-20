@@ -22,8 +22,8 @@ public class EnemyAI : MonoBehaviour {
     Vector3 moveDestination;
     List<Vector3> moveDestinations = new List<Vector3>();
 
-    float aimAngleH;
-    float aimAngleV;
+    public float aimAngleH;
+    public float aimAngleV;
 
     CharacterController controller;
     MovementHelper.Movement movement;
@@ -42,7 +42,7 @@ public class EnemyAI : MonoBehaviour {
     void Start() {
         controller = gameObject.GetComponent<CharacterController>();
         movement = new MovementHelper.Movement(gameObject, controller
-            , _moveAcc: 54f, _moveMax: 4.8, _friction: 32f, _gravity: 27f);
+            , _moveAcc: 75f, _moveMax: 6.0, _friction: 40f, _gravity: 27f);
 
         moveDestination = gameObject.transform.position;
 
@@ -63,6 +63,8 @@ public class EnemyAI : MonoBehaviour {
 
         gunInstance = gameObject.transform.Find("Enemy Gun").gameObject;
         gunScript = gunInstance.GetComponent<EnemyGun>();
+
+        //controller.enabled = false;
     }
 
     void Update() {

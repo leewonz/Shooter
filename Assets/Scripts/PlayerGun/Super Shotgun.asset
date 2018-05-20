@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d569f1492ed15045a1920923e1f2335, type: 3}
+  m_Name: Super Shotgun
+  m_EditorClassIdentifier: 
+  gunType: 0
+  holdClickToFire: 0
+  gunObj: {fileID: 1977948813503114, guid: d603f47a9d018c946af457b41953c839, type: 2}
+  bulletObj: {fileID: 1912181210798784, guid: 9818add4a7812f5458e67498925298a6, type: 2}
+  lightObj: {fileID: 1577987090589774, guid: d964799eddfaff94e924d1d4294caec3, type: 2}
+  gunFireObj: {fileID: 1583627659389392, guid: 0805f26a6b103da4f88e0cd4faf64347, type: 2}
+  clipSize: 12
+  maxBullet: 240
+  fireInterval: 0.6
+  reloadTime: 1
+  spread: 30
+  bulletCount: 60
+  recoil: 0
+  recoilMax: 0
+  recoilDecrease: 0
+  bulletSpeed: 180
+  bulletLife: 1

@@ -17,9 +17,9 @@ public class MovePlayer : MonoBehaviour {
     GameObject currentGun;
     PlayerGun currentGunScript;
 
-    float moveAcc = 108f;
-    float moveMax = 5.4f;
-    float moveFriction = 54f;
+    float moveAcc = 90f;
+    float moveMax = 6.2f;
+    float moveFriction = 45f;
     float moveGravity = 26f;
 
     float moveAccAirdash = 48f;
@@ -30,7 +30,7 @@ public class MovePlayer : MonoBehaviour {
     bool dashOn = false;
     float dashDirection = 0;
     float dashValueMax = 24f;
-    float dashValueAirMax = 11f;
+    float dashValueAirMax = 11.2f;
     float dashValue = 0;
 
     float dashMul = 1f;
@@ -74,7 +74,7 @@ public class MovePlayer : MonoBehaviour {
 
         cameraScript = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<MoveCamera>();
 
-        currentGun = transform.Find("Handgun").gameObject;
+        currentGun = transform.Find("Main Camera/Handgun").gameObject;
         currentGunScript = currentGun.GetComponent<PlayerGun>();
 
         thisTransform = gameObject.transform;
@@ -117,12 +117,17 @@ public class MovePlayer : MonoBehaviour {
         { ;}
         if (Input.GetButton("Dash"))
         { ;}
+        /*
         else
         {
-            if ((dashTime >= dashTimeMax) && /*movement.collisionBelow &&*/ dashOn)
+            if ((dashTime >= dashTimeMax) && dashOn)
             {
                 DashEnd();
             }
+        }*/
+        if ((dashTime >= dashTimeMax) && dashOn)
+        {
+            DashEnd();
         }
 
         if (dashOn)

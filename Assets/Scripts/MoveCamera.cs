@@ -11,7 +11,7 @@ public class MoveCamera : MonoBehaviour {
     
     public float cameraVerticalAngle = 0;
 
-    float sensitivityMul = 0.2f;
+    float sensitivityMul = 0.18f;
     GameObject parent;
     GameObject camera;
 
@@ -20,8 +20,8 @@ public class MoveCamera : MonoBehaviour {
     bool viewBobLock = false;
     float viewBobTime = 0;
     float viewBobTimeMul = 600.0f;
-    float viewBobValue = 0.0f;
-    float viewBobValueMul = 0.04f;
+    public float viewBobValue = 0.0f;
+    public float viewBobValueMul = 0.03f;
     int viewBobCount = 0;
     Vector3 cameraLocalPos;
 

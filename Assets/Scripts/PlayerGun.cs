@@ -23,6 +23,8 @@ public class PlayerGun : MonoBehaviour {
     int layerMaskSolid = 1 << 9;
 
     GameObject bullet;
+    GameObject lightObj;
+    GameObject fireObj;
     PlayerBullet bulletScript;
     GameObject camera;
     MoveCamera cameraScript;
@@ -30,7 +32,7 @@ public class PlayerGun : MonoBehaviour {
 
     float currentRecoil = 0;
 
-    float bulletClippingDistanceMin = 2.0f;
+    float bulletClippingDistanceMin = 4.0f;
 
     Quaternion bulletDirection; 
 
@@ -42,17 +44,23 @@ public class PlayerGun : MonoBehaviour {
         camera = GameObject.FindGameObjectWithTag("MainCamera");
         cameraScript = camera.GetComponent<MoveCamera>();
 
-        gunTipTransform = gameObject.transform.Find("GunTip");
+        gunTipTransform = gameObject.transform.Find("GunModel/GunTip");
     }
 	
 	// Update is called once per frame
 	void Update () {
+        
         //update
         fireIntervalCurrent += Time.deltaTime;
         reloadTimeCurrent += Time.deltaTime;
 
-        gameObject.transform.localRotation
-            = (Quaternion.Euler(new Vector3(camera.GetComponent<MoveCamera>().cameraVerticalAngle, 0, 0)));
+        //gameObject.transform.localRotation
+        //    = (Quaternion.Euler(new Vector3(camera.GetComponent<MoveCamera>().cameraVerticalAngle, 0, 0)));
+        gameObject.transform.localPosition = 
+            (new Vector3(0
+            , Mathf.Asin(cameraScript.cameraVerticalAngle / -90) * -(Mathf.Rad2Deg / 90) * 0.25f
+            + cameraScript.viewBobValue * -cameraScript.viewBobValueMul
+            , 0));
 
         if ((fireTrigger && gun.holdClickToFire)
             || (fireTriggerDown && !gun.holdClickToFire))
@@ -72,7 +80,7 @@ public class PlayerGun : MonoBehaviour {
                     , maxDistance: Mathf.Infinity, layerMask: _rayMask);
 
                 float _rayHitDistance;
-
+                
                 for (int i = 1; i <= gun.bulletCount; i++)
                 {
                     //create bullet
@@ -80,9 +88,26 @@ public class PlayerGun : MonoBehaviour {
                     bullet.transform.position = gunTipTransform.position;
                     bulletScript = bullet.GetComponent<PlayerBullet>();
 
+                    //create light
+                    if (gun.lightObj != null && (i == 1))
+                    {
+                        lightObj = Instantiate(gun.lightObj);
+                        lightObj.transform.position = gunTipTransform.position;
+                    }
+                    //create fire
+                    if (gun.gunFireObj != null && (i == 1))
+                    {
+                        fireObj = Instantiate(gun.gunFireObj);
+                        fireObj.transform.position = gunTipTransform.position;
+                        fireObj.transform.parent = gameObject.transform;
+                    }
+                    
+
                     //set random spread
                     Quaternion spreadRandomRotation = Random.rotation;
-                    float spreadRandomAngle = Random.Range(0, gun.spread + currentRecoil);
+                    //float spreadRandomAngle = Random.Range(0, gun.spread + currentRecoil);
+                    float spreadRandomAngle = currentRecoil + gun.spread;
+                    //Debug.Log("Hi " + gun.spread);
 
                     //ray points to object?
                     if (_isRay/* && (_rayHit.point - transform.position).sqrMagnitude >= 1f*1f*/)
@@ -98,13 +123,22 @@ public class PlayerGun : MonoBehaviour {
                         _rayHitDistance = Mathf.Infinity;
                     }
                     //apply random spread
-                    bulletDirection = Quaternion.RotateTowards(bulletDirection, spreadRandomRotation
-                            , spreadRandomAngle);
-                    
+                    //bulletDirection = Quaternion.RotateTowards(bulletDirection, spreadRandomRotation
+                    //        , spreadRandomAngle);
+                    bulletDirection = Quaternion.Lerp(
+                        bulletDirection
+                        , spreadRandomRotation
+                        , spreadRandomAngle / 180);
+
                     // apply direction for bullet
                     bullet.transform.rotation = bulletDirection;
                     bulletScript.directionInit = bulletDirection * Vector3.forward;
                     bulletScript.speedInit = gun.bulletSpeed;
+
+                    // apply direction for light
+                    lightObj.transform.rotation = bulletDirection;
+                    // apply direction for fire
+                    fireObj.transform.rotation = bulletDirection;
 
                     // apply life for bullet
                     bulletScript.lifeMax = gun.bulletLife;

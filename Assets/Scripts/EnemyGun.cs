@@ -6,10 +6,10 @@ public class EnemyGun : MonoBehaviour {
 
     public GameObject bulletObj;
     public int bulletCountMax = 3;
-    public float reloadTimeMax = 2;
-    public float fireInterval = 0.25f;
+    public float reloadTimeMax = 1.5f;
+    public float fireInterval = 0.20f;
     public float spread = 2;
-    public float bulletSpeed = 30.0f;
+    public float bulletSpeed = 52.0f;
     public float bulletLife = 2f;
 
     [HideInInspector]
@@ -24,12 +24,16 @@ public class EnemyGun : MonoBehaviour {
     Transform enemyTransform;
     Transform gunTipTransform;
 
+    EnemyAI enemyAI;
+
     // Use this for initialization
     void Start () {
         float bulletCountCurrent = bulletCountMax;
 
         enemyTransform = transform.parent;
         gunTipTransform = transform.Find("GunTip");
+
+        enemyAI = transform.parent.gameObject.GetComponent<EnemyAI>();
     }
 	
 	// Update is called once per frame
@@ -43,6 +47,8 @@ public class EnemyGun : MonoBehaviour {
                 bulletCountCurrent = bulletCountMax;
             }
         }
+
+        transform.localEulerAngles = new Vector3(enemyAI.aimAngleV, 0, 0);
     }
 
     public void Fire(float horizontalAngle, float verticalAngle)
@@ -58,7 +64,7 @@ public class EnemyGun : MonoBehaviour {
 
             int _rayMask = 1 << 8 | 1 << 9; // includes Player and solid
             RaycastHit _rayHit;
-            bool _isRay = Physics.Raycast(transform.position
+            bool _isRay = Physics.Raycast(enemyTransform.position
                 , Quaternion.Euler(verticalAngle, horizontalAngle, 0) * Vector3.forward
                 , out _rayHit, maxDistance: maxFireDistance, layerMask: _rayMask);
 

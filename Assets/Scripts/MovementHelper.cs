@@ -193,7 +193,7 @@ namespace MovementHelper
 
             if (true)
             {
-                Debug.Log(motion.ToString() + motionV.ToString() + "/ " + thisController.transform.position);
+                //Debug.Log(motion.ToString() + motionV.ToString() + "/ " + thisController.transform.position);
             }
         }
 

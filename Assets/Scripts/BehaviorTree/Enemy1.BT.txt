@@ -25,15 +25,15 @@ tree("Attack")
 			parallel
 				repeat
 					sequence
-						repeat 2
+						repeat 3
 							sequence
-								not repeat not SetRandomAttackPath(1.5,6.0,2.0,10)
+								not repeat not SetRandomAttackPath(1.0,4.5,2.0,10)
 						
 								mute
 									while not IsInDestination
 										parallel
 											repeat MoveToPosition
-											not Wait 2.0
+											not Wait 1.5
 						sequence
 							Wait 0.4
 							FireAll()

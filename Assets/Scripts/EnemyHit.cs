@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class EnemyHit : MonoBehaviour {
 
-    float health = 80;
+    float health = 60;
 
     public Material hitMaterial;
 

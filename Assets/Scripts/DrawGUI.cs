@@ -6,13 +6,22 @@ public class DrawGUI : MonoBehaviour {
 
     public Texture crosshairStickH;
     public Texture crosshairStickV;
+    //public Texture bloodScreen;
     float crosshairMinSpread = 3;
-    float crosshairSpreadMultiplier = 12;
+    float crosshairSpreadMultiplier = 8;
     float crosshairSpread;
 
     float deltaTime = 0.0f;
 
+    float bloodscreenAlpha = 0;
+    float bloodscreenMax = 1.0f;
+    float bloodscreenDec = 4.0f;
+
+    GameObject playerObj;
+    PlayerHit playerHit;
     PlayerGun playerGun;
+    GameObject canvasHitEffectObj;
+    CanvasGroup canvasHitEffectCG;
 
     // Use this for initialization
     void Start () {
@@ -27,7 +36,12 @@ public class DrawGUI : MonoBehaviour {
         {
             Debug.LogError("player gun count is not one.");
         }
-        
+
+        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+        playerHit = playerObj.GetComponent<PlayerHit>();
+
+        canvasHitEffectObj = GameObject.Find("Canvas Hit Effect");
+        canvasHitEffectCG = canvasHitEffectObj.GetComponent<CanvasGroup>();
     }
 	
 	// Update is called once per frame
@@ -36,6 +50,12 @@ public class DrawGUI : MonoBehaviour {
 
         crosshairSpread = Mathf.Max(crosshairMinSpread
             , playerGun.CurrentSpread() * crosshairSpreadMultiplier);
+
+        //Screen Hit Effect
+        bloodscreenAlpha = Mathf.Max(bloodscreenAlpha - (bloodscreenDec * Time.deltaTime), 0);
+        
+        canvasHitEffectCG.alpha = bloodscreenAlpha;
+        //GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), bloodScreen, ScaleMode.StretchToFill,);
     }
 
     void OnGUI()
@@ -75,8 +95,11 @@ public class DrawGUI : MonoBehaviour {
                   , (Screen.height / 2) - (float)(crosshairStickH.height / 2))
               , new Vector2( + (crosshairStickH.width), crosshairStickH.height))
             , crosshairStickH, ScaleMode.StretchToFill);
-        //crosshairStick
 
+        
+
+
+        //FPS counter
         int w = Screen.width, h = Screen.height;
 
         GUIStyle style = new GUIStyle();
@@ -89,5 +112,10 @@ public class DrawGUI : MonoBehaviour {
         float fps = 1.0f / deltaTime;
         string text = string.Format("{0:0.0} ms ({1:0.} fps)", msec, fps);
         GUI.Label(rect, text, style);
+    }
+
+    public void HitEffect()
+    {
+        bloodscreenAlpha = bloodscreenMax;
     }
 }

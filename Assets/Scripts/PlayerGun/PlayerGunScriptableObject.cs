@@ -14,6 +14,8 @@ public class PlayerGunScriptableObject : ScriptableObject {
 
     public GameObject gunObj;
     public GameObject bulletObj;
+    public GameObject lightObj;
+    public GameObject gunFireObj;
 
     public int clipSize;
     public int maxBullet;

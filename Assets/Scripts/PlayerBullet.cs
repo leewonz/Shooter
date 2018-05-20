@@ -30,6 +30,8 @@ public class PlayerBullet : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
+        lifeCurrent = 0;
+
         speed = speedInit;
         directionInit = directionInit.normalized;
         direction = directionInit;
@@ -41,12 +43,30 @@ public class PlayerBullet : MonoBehaviour {
         playerObject = GameObject.FindGameObjectWithTag("Player"); //unused
         cameraObject = GameObject.FindGameObjectWithTag("MainCamera"); //unused
         CameraRotation = new Vector3(cameraObject.GetComponent<MoveCamera>().cameraVerticalAngle
-            , cameraObject.GetComponent<MoveCamera>().cameraHorizontalAngle,0); //unused
-        
+            , cameraObject.GetComponent<MoveCamera>().cameraHorizontalAngle, 0); //unused
     }
-	
-	// Update is called once per frame
-	void Update () {
+
+    void OnEnable()
+    {
+        lifeCurrent = 0;
+
+        speed = speedInit;
+        directionInit = directionInit.normalized;
+        direction = directionInit;
+
+        positionInit = transform.position;
+
+        thisPos = gameObject.transform.position;
+
+        playerObject = GameObject.FindGameObjectWithTag("Player"); //unused
+        cameraObject = GameObject.FindGameObjectWithTag("MainCamera"); //unused
+        CameraRotation = new Vector3(cameraObject.GetComponent<MoveCamera>().cameraVerticalAngle
+            , cameraObject.GetComponent<MoveCamera>().cameraHorizontalAngle, 0); //unused
+
+    }
+
+    // Update is called once per frame
+    void Update () {
         
         thisPos = gameObject.transform.position;
 
@@ -59,7 +79,7 @@ public class PlayerBullet : MonoBehaviour {
         {
             MakeHitEffect(hitEffect, gameObject.transform.position - (direction * 0.2f)
                 , Quaternion.LookRotation(direction, Vector3.up));
-            Destroy(gameObject);
+            CustomDestroy(gameObject);
         }
 
         //check if bullet is hit
@@ -76,9 +96,9 @@ public class PlayerBullet : MonoBehaviour {
                 if ((clippingEnabled == false
                     || (thisPos - positionInit).sqrMagnitude >= clippingDistance * clippingDistance))
                 {
-                    MakeHitEffect(hitEffect, hit.point - (direction * 0.2f)
+                    MakeHitEffect(hitEffect, hit.point - (direction * 0.1f)
                         , Quaternion.LookRotation(direction, Vector3.up));
-                    Destroy(gameObject);
+                    CustomDestroy(gameObject);
                 }
             }
             if (hit.transform.gameObject.layer == 10)//enemy
@@ -88,7 +108,7 @@ public class PlayerBullet : MonoBehaviour {
 
                 hit.transform.parent.gameObject.GetComponent<EnemyHit>().Hit(10);
 
-                Destroy(gameObject);
+                CustomDestroy(gameObject);
             }
         }
 
@@ -103,6 +123,11 @@ public class PlayerBullet : MonoBehaviour {
         hitEffectInstance = Instantiate(obj);
         hitEffectInstance.transform.position = position;
         hitEffectInstance.transform.rotation = rotation;
+    }
+
+    void CustomDestroy(GameObject go)
+    {
+        Destroy(gameObject);
     }
     /*
         Collider[] startHitColliders = Physics.OverlapSphere(thisPos, 0.01f, layerMaskEnemy| layerMaskSolid);

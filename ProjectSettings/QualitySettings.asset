@@ -176,7 +176,7 @@ QualitySettings:
     excludedTargetPlatforms: []
   - serializedVersion: 2
     name: Level 6
-    pixelLightCount: 0
+    pixelLightCount: 4
     shadows: 1
     shadowResolution: 1
     shadowProjection: 1
